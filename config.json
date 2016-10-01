@@ -1,0 +1,10 @@
+"accessories": [
+  {
+    "accessory": "mqtt-doorbell",
+    "name": "Main Gate Bell",
+    "url": "mqtt://localhost",
+    "topic": "home-maingate-bell",
+    "username": "username",
+    "password": "password",
+  }
+  ]
