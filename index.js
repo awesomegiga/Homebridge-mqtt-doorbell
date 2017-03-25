@@ -37,11 +37,11 @@ function DoorbellAccessory(log, config) {
   this.service = new Service.Door(this.name);
   this.service
   .getCharacteristic(Characteristic.ProgrammableSwitchEvent)
-  .on('set', this.triggerProgrammableSwitchEvent.bind(this));
+  .on('get', this.triggerProgrammableSwitchEvent.bind(this));
 
   this.service
   .getCharacteristic(Characteristic.Volume)
-  .on('set', this.mute_doorbell.bind(this));
+  .on('get', this.mute_doorbell.bind(this));
 
   this.client  = mqtt.connect(this.url, this.options);
   var that = this;
