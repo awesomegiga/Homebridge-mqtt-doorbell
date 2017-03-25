@@ -14,7 +14,7 @@ function DoorbellAccessory(log, config) {
   this.name = config["name"];
   this.url = config['url'];
   this.topic = config['topic'];
-  this.client_Id 		= 'mqttjs_' + Math.random().toString(16).substr(2, 8);7
+  this.client_Id 		= 'mqttjs_' + Math.random().toString(16).substr(2, 8);
   this.options = {
     keepalive: 10,
     clientId: this.client_Id,
@@ -34,10 +34,14 @@ function DoorbellAccessory(log, config) {
     rejectUnauthorized: false
   };
 
-  this.service = new Service.Doorbell(this.name);
+  this.service = new Service.Door(this.name);
   this.service
   .getCharacteristic(Characteristic.ProgrammableSwitchEvent)
   .on('set', this.triggerProgrammableSwitchEvent.bind(this));
+
+  this.service
+  .getCharacteristic(Characteristic.Volume)
+  .on('set', this.mute_doorbell.bind(this));
 
   this.client  = mqtt.connect(this.url, this.options);
   var that = this;
@@ -53,6 +57,10 @@ function DoorbellAccessory(log, config) {
 
 DoorbellAccessory.prototype.triggerProgrammableSwitchEvent = function(callback) {
   callback(null, this.ringbell);
+}
+
+DoorbellAccessory.prototype.triggerProgrammableSwitchEvent = function(callback) {
+  callback(null, this.mute_doorbell);
 }
 
 DoorbellAccessory.prototype.getServices = function() {
