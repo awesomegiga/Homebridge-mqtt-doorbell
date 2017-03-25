@@ -49,7 +49,7 @@ function DoorbellAccessory(log, config) {
 
   this.client.on('message', function (topic, message) {
   //data = JSON.parse(message);
-  if (data === null) {return null}
+  //if (data === null) {return null}
   that.ringbell = parseFloat(data);
   });
 }
