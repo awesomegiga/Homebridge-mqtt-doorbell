@@ -48,7 +48,7 @@ function DoorbellAccessory(log, config) {
   this.client.subscribe(this.topic);
 
   this.client.on('message', function (topic, message) {
-  data = JSON.parse(message);
+  //data = JSON.parse(message);
   if (data === null) {return null}
   that.ringbell = parseFloat(data);
   });

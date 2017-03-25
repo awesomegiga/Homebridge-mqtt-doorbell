@@ -5,6 +5,6 @@
     "url": "mqtt://localhost",
     "topic": "home-maingate-bell",
     "username": "username",
-    "password": "password",
+    "password": "password"
   }
   ]
