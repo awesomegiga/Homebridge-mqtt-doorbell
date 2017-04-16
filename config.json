@@ -1,9 +1,11 @@
 "accessories": [
   {
-    "accessory": "mqtt-doorbell",
-    "name": "Main Gate Bell",
+    "accessory": "mqtt-doorsystem",
+    "name": "Building Gate",
     "url": "mqtt://localhost",
-    "topic": "home-maingate-bell",
+    "topic_doorbellRinging": "Doorbell_pressed",
+    "topic_doorbellMute": "Mute_doorbell_set",
+    "topic_doorOpener": "Maingate_opening_set",
     "username": "username",
     "password": "password"
   }
