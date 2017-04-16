@@ -43,13 +43,12 @@ function doorSystem(log, config) {
   this.doorState = 0;
   this.doorOpeningObstruction = false;
 
-  this.Doorbellservice = new Service.MotionSensor(this.name);
-  this.Doorbellservice
+  this.Doorbellservice = new Service.MotionSensor(this.name)
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', this.getDoorbellRinging.bind(this));
 
-  this.Doorbellservice
-    .getCharacteristic(Characteristic.On)
+  this.DoorbellVolume = new Service.Speaker(this.name);
+    .getCharacteristic(Characteristic.Mute)
     .on('get', this.getmuteDoorbell.bind(this))
     .on('set', this.setmuteDoorbell.bind(this));
 
@@ -94,14 +93,14 @@ function doorSystem(log, config) {
 }
 
 doorSystem.prototype.getmuteDoorbell = function(callback) {
-  callback(null, !(this.doorbellMute));
+  callback(null, (this.doorbellMute));
 }
 
 doorSystem.prototype.setmuteDoorbell = function(value, callback) {
-  this.doorbellMute = !value;
+  this.doorbellMute = value;
   this.log('Doorbell mute is: ', this.doorbellMute);
   this.client.publish(this.topicDoorbellMute ,this.doorbellMute.toString(), { qos: 1, retained: true });
-  this.doorbellMute = !this.doorbellMute;
+  this.doorbellMute = this.doorbellMute;
   callback(null);
 }
 
