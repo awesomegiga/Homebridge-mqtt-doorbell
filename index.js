@@ -7,7 +7,7 @@ module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
   homebridge.registerAccessory("homebridge-mqtt-doorbell", "mqtt-doorsystem", doorSystem);
-}
+};
 
 function doorSystem(log, config) {
   this.log = log;
@@ -37,43 +37,46 @@ function doorSystem(log, config) {
     rejectUnauthorized: false
   };
 
-  this.doorbellRinging =false ;
+  this.doorbellRinging = false;
   this.doorbellMute = false;
-  this.doorOpened = false;
-  this.doorState = 0;
+  this.doorClosed = 1;
+  this.doorOpen = false;
+  this.doorState = false;
   this.doorOpeningObstruction = false;
 
-  this.Doorbellservice = new Service.MotionSensor(this.name)
+  this.Doorbellservice = new Service.MotionSensor(this.name);
+  this.Doorbellservice
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', this.getDoorbellRinging.bind(this));
 
-  this.DoorbellVolume = new Service.Speaker(this.name);
-    .getCharacteristic(Characteristic.Mute)
+  // this.DoorbellVolume = new Service.Speaker()
+  this.Doorbellservice
+    .addCharacteristic(Characteristic.On)
     .on('get', this.getmuteDoorbell.bind(this))
     .on('set', this.setmuteDoorbell.bind(this));
-
-  this.doorOpener = new Service.GarageDoorOpener(this.name)
-    .getCharacteristic(Characteristic.TargetDoorState)
+  //
+  // this.doorOpener = new Service.GarageDoorOpener();
+  // this.doorOpener
+  this.Doorbellservice
+    .addCharacteristic(Characteristic.TargetDoorState)
     .on('get', function(callback) {
-      callback(null, !(this.doorOpened));
+      callback(null, (this.doorClosed));
     }.bind(this))
     .on('set', this.openDoor.bind(this));
+  //
+  // this.doorOpener
+  //   .getCharacteristic(Characteristic.CurrentDoorState)
+  //   .on('get', function(callback) {
+  //     callback(null, this.doorState);
+  //   }.bind(this));
+  //
+  // this.doorOpener
+  //   .getCharacteristic(Characteristic.ObstructionDetected)
+  //   .on('get', function(callback) {
+  //     callback(null, this.doorOpeningObstruction);
+  //   }.bind(this));
 
-  this.doorOpener
-  .getCharacteristic(Characteristic.CurrentDoorState)
-  .on('get', function(callback) {
-    callback(null, this.doorState);
-  }.bind(this));
-
-  this.doorOpener
-  .getCharacteristic(Characteristic.ObstructionDetected)
-  .on('get', function(callback) {
-    callback(null, this.doorOpeningObstruction);
-  }.bind(this));
-
-
-
-  this.infoService = new Service.Service.AccessoryInformation(this.name)
+  this.informationService = new Service.AccessoryInformation()
     .setCharacteristic(Characteristic.Manufacturer, "GiGa Factory")
     .setCharacteristic(Characteristic.Model, "ESP8266")
     .setCharacteristic(Characteristic.SerialNumber, "XXXXXX");
@@ -84,12 +87,17 @@ function doorSystem(log, config) {
   this.client.subscribe(this.topicDoorbellRinging);
 
   this.client.on('message', function (topic, message) {
-  //data = JSON.parse(message);
-  //if (data === null) {return null}
-  that.ringbell = parseFloat(message);
-  that.doorbellRinging = true;
-  that.setDoorbellRiningEvent(that);
-}.bind(that));
+    // data = JSON.parse(message);
+    // if (data === null) {return null}
+    if (topic === that.topicDoorbellRinging){
+      // that.doorbellRinging = parseFloat(message);
+      that.log('MQTT:message arrived (Topic: ', that.topicDoorbellRinging, ', Content: ', message.toString(), ')');
+      if (message.toString() === 'true'){
+        that.doorbellRinging = true;
+        that.setDoorbellRiningEvent();
+      }
+    }
+  }.bind(that));
 }
 
 doorSystem.prototype.getmuteDoorbell = function(callback) {
@@ -105,9 +113,20 @@ doorSystem.prototype.setmuteDoorbell = function(value, callback) {
 }
 
 doorSystem.prototype.openDoor = function(value, callback) {
-  this.doorOpened = !value;
-  this.log('Open the door: ', this.doorOpened);
-  this.client.publish(this.Doorbell_pressed ,this.doorOpened.toString(), { qos: 1, retained: true });
+  if (value == 1){
+    this.doorOpen = false;
+    this.doorClosed = 1;
+    }
+  else if (value == 0){
+    this.doorOpen = true;
+    this.doorClosed = 0;
+  }
+  else{
+  this.log('Unknown State pf door open');}
+  this.log('Open the door: ', this.doorOpen);
+  this.client.publish(this.topicDoorOpener ,this.doorOpen.toString(), { qos: 1, retained: true });
+  this.doorOpen = !(this.doorOpen);
+  this.doorClosed = !(this.doorClosed);
   callback(null);
 }
 
@@ -115,13 +134,14 @@ doorSystem.prototype.getDoorbellRinging = function(callback) {
   callback(null, this.doorbellRinging);
 }
 
-doorSystem.prototype.setDoorbellRiningEvent = function(self) {
-  self.log(this.name, "Doorbell Ringing status is: ", this.doorbellRinging);
-  self.service.setCharacteristic(Characteristic.MotionDetected, this.doorbellRinging);
+doorSystem.prototype.setDoorbellRiningEvent = function() {
+  this.log("Doorbell is Ringing");
+  this.Doorbellservice.setCharacteristic(Characteristic.MotionDetected, this.doorbellRinging);
   this.doorbellRinging = false;
-  self.log(this.name, "Doorbell Ringing status is: ", this.doorbellRinging);
+  // this.log("Doorbell Ringing status is: ", this.doorbellRinging);
 }
 
 doorSystem.prototype.getServices = function() {
-  return [this.Doorbellservice, this.doorOpner, this.infoService];
+  // return [this.infoService, this.Doorbellservice, this.doorOpener, this.DoorbellVolume];
+  return [this.Doorbellservice, this.informationService];
 }
