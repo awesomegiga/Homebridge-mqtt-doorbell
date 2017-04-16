@@ -43,12 +43,13 @@ function doorSystem(log, config) {
   this.doorState = 0;
   this.doorOpeningObstruction = false;
 
-  this.Doorbellservice = new Service.MotionSensor(this.name)
+  this.Doorbellservice = new Service.MotionSensor(this.name);
+  this.Doorbellservice
     .getCharacteristic(Characteristic.MotionDetected)
     .on('get', this.getDoorbellRinging.bind(this));
 
   this.Doorbellservice
-    .addCharacteristic(Characteristic.On)
+    .getCharacteristic(Characteristic.On)
     .on('get', this.getmuteDoorbell.bind(this))
     .on('set', this.setmuteDoorbell.bind(this));
 
