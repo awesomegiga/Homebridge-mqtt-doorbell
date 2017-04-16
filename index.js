@@ -48,7 +48,7 @@ function doorSystem(log, config) {
     .on('get', this.getDoorbellRinging.bind(this));
 
   this.Doorbellservice
-    .addCharacteristic(Characteristic.on)
+    .addCharacteristic(Characteristic.On)
     .on('get', this.getmuteDoorbell.bind(this))
     .on('set', this.setmuteDoorbell.bind(this));
 
